@@ -8,7 +8,11 @@ import {
 
 import { images } from '../../assets'
 
-const Card = () => {
+const getAngle = (index, size) => (size <= 1) ? '0deg': `${index * (50 / (size - 1)) - 25}deg`
+
+const getTop = (index, size) => (size <= 1) ? 0 : (index < (size / 2)) ? index : size - 1  - index 
+
+const Card = ({ positionX, index, size }) => {
 
 
   const pan = useRef(new Animated.ValueXY()).current 
@@ -18,11 +22,11 @@ const Card = () => {
   pan.addListener(value => val = value)
    
   panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (e, gesture) => true,
+      onStartShouldSetPanResponder: () => true,
       onPanResponderMove: Animated.event([
         null, { dx: pan.x, dy: pan.y }
       ], false),
-      onPanResponderRelease: (e, gesture) => {
+      onPanResponderRelease: () => {
         Animated.spring(pan, {
           useNativeDriver: false,
           toValue: { x: 0, y: 0 },
@@ -35,14 +39,17 @@ const Card = () => {
   const panStyle = {
     transform: [
       ...pan.getTranslateTransform(),
+      {
+        rotateZ: getAngle(index, size)
+      }
     ]
   }
   return (
       <Animated.View
         {...this.panResponder.panHandlers}
-        style={[panStyle, styles.card]}
+        style={[panStyle, styles.card,  { left: positionX, top:  140 - getTop(index, size) * (180 / ((size == 0) ? 1 : size)) } ]}
       >
-        <Image source={images.card} style={styles.card} />
+        <Image source={images.card} style={styles.image} />
       </Animated.View>
   )
 }
@@ -50,6 +57,7 @@ const Card = () => {
 
 const styles = StyleSheet.create({
   card:{
+    position:'absolute',
     width: 120,
     height: 166,
     shadowColor: "#000",
@@ -60,7 +68,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  }
+  },
+  image:{
+    width:'100%',
+    height:'100%'
+}
 })
 
 export default Card 
